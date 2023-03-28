@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ExtendedSerialPort;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 
 namespace RobotInterface
@@ -21,10 +23,40 @@ namespace RobotInterface
     /// </summary>
     public partial class MainWindow : Window
     {
+        ReliableSerialPort serialPort1;
+        DispatcherTimer timerAffichage;
+
+        string receivedText;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            serialPort1 = new ReliableSerialPort("COM16", 115200, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One);
+            serialPort1.OnDataReceivedEvent += SerialPort1_OnDataReceivedEvent;
+            serialPort1.Open();
+
+            timerAffichage = new DispatcherTimer();
+            timerAffichage.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            timerAffichage.Tick += TimerAffichage_Tick; 
+            timerAffichage.Start();
+
         }
+
+        private void TimerAffichage_Tick(object sender, EventArgs e)
+        {
+           
+        }
+
+        //receivedText = "" + textBoxEmission.Text;
+
+        private void SerialPort1_OnDataReceivedEvent(object sender, DataReceivedArgs e)
+        {
+            //textBoxReception.Text += Encoding.UTF8.GetString(e.Data, 0, e.Data.Length);
+
+        }
+
+        
 
         private void buttonEnvoyer_Click(object sender, RoutedEventArgs e)
         {
@@ -40,10 +72,13 @@ namespace RobotInterface
 
         private void SendMessage()
         {
-            string objTextBox = textBoxEmission.Text;
+            //string objTextBox = textBoxEmission.Text;
+            //textBoxReception.Text += objTextBox + "\n";
+            serialPort1.WriteLine(textBoxEmission.Text);
             textBoxEmission.Text = " ";
-            textBoxReception.Text += objTextBox + "\n";
-            
+
+
+
         }
 
         private void textBoxEmission_KeyUp(object sender, KeyEventArgs e)
@@ -54,11 +89,7 @@ namespace RobotInterface
             }
         }
 
-        ReliableSerialPort serialPort1;
-        serialPort1 = new ReliableSerialPort("COM3", 115200, Parity.None, 8, StopBits.One);
-        serialPort1.Open();
-
-
+     
 
 
 
