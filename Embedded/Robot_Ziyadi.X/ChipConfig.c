@@ -1,4 +1,5 @@
 #include <xc.h>
+#include "main.h"
 
 // DSPIC33EP512GM306 Configuration Bit Settings
 
@@ -38,9 +39,8 @@
 
 // #pragma config statements should precede project file includes.
 // Use project enums instead of #define for ON and OFF.
-    
-void InitOscillator() 
-{
+
+void InitOscillator() {
     // Configure PLL prescaler, PLL postscaler, PLL divisor
     PLLFBD = 63; // M=65
     CLKDIVbits.PLLPOST = 0; // N2=2
