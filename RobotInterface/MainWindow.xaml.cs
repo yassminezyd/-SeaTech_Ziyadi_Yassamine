@@ -26,13 +26,14 @@ namespace RobotInterface
         ReliableSerialPort serialPort1;
         DispatcherTimer timerAffichage;
 
-        string receivedText;
+        Robot robot = new Robot();
+        byte[] byteList;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            serialPort1 = new ReliableSerialPort("COM16", 115200, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One);
+            serialPort1 = new ReliableSerialPort("COM5", 115200, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One);
             serialPort1.OnDataReceivedEvent += SerialPort1_OnDataReceivedEvent;
             serialPort1.Open();
 
@@ -41,19 +42,29 @@ namespace RobotInterface
             timerAffichage.Tick += TimerAffichage_Tick; 
             timerAffichage.Start();
 
+            byteList = new byte[20];
+
+
         }
 
         private void TimerAffichage_Tick(object sender, EventArgs e)
-        {
-           
+        {  
+            while(robot.byteListReceived.Count>0)
+            {
+                textBoxReception.Text += robot.byteListReceived.Dequeue().ToString();
+            }
         }
 
-        //receivedText = "" + textBoxEmission.Text;
 
         private void SerialPort1_OnDataReceivedEvent(object sender, DataReceivedArgs e)
         {
-            //textBoxReception.Text += Encoding.UTF8.GetString(e.Data, 0, e.Data.Length);
+            robot.receivedText += Encoding.UTF8.GetString(e.Data, 0, e.Data.Length);
 
+            for (int i = 0; i < e.Data.Length; i++)
+            {
+                byte b = e.Data[i];
+                robot.byteListReceived.Enqueue(b);
+            }
         }
 
         
@@ -75,8 +86,8 @@ namespace RobotInterface
             //string objTextBox = textBoxEmission.Text;
             //textBoxReception.Text += objTextBox + "\n";
             serialPort1.WriteLine(textBoxEmission.Text);
-            textBoxEmission.Text = " ";
-
+            //textBoxEmission.Text = " ";
+            //textBoxReception.Text += receivedText + "\n";
 
 
         }
@@ -89,9 +100,14 @@ namespace RobotInterface
             }
         }
 
-     
+        private void Test_Click(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < byteList.Length; i++)
+            {
+                byteList[i] = (byte)(2 * i);
+            }
 
-
-
+            serialPort1.Write(byteList, 0, byteList.Length);
+        }
     }
 }
