@@ -9,6 +9,7 @@
 #include "PWM.h"
 #include "ADC.h"
 #include "main.h"
+#include "UART.h"
 
 unsigned char stateRobot;
 unsigned char nextStateRobot = 0;
@@ -29,6 +30,7 @@ int main(void) {
     InitPWM();
     InitADC1();
     InitTimer4();
+    InitUART();
 
 
     /*
@@ -98,13 +100,17 @@ int main(void) {
             }
 
         }
-        
+
         OperatingSystemLoop();
 
         //unsigned char x = ADCIsConversionFinished();
         //if (x == 1)
         //ADCClearConversionFinishedFlag();
         //PWMSetSpeedConsigne(-20,MOTEUR_GAUCHE);
+
+//        SendMessageDirect((unsigned char*) "Bonjour", 7);
+//        __delay32(40000000);
+
     } // fin main
 }
 
@@ -172,7 +178,7 @@ void SetNextRobotStateInAutomaticMode() {
             robotState.distanceTelemetreDroit < 25 &&
             robotState.distanceTelemetreCentre > 20 &&
             robotState.distanceTelemetreGauche > 25 &&
-            robotState.distanceTelemetreGaucheEx >30
+            robotState.distanceTelemetreGaucheEx > 30
             ) //Obstacle àdroite
         positionObstacle = OBSTACLE_A_DROITE;
     else if (robotState.distanceTelemetreDroitEx > 30 &&

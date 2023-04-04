@@ -86,7 +86,7 @@ namespace RobotInterface
             //string objTextBox = textBoxEmission.Text;
             //textBoxReception.Text += objTextBox + "\n";
             serialPort1.WriteLine(textBoxEmission.Text);
-            //textBoxEmission.Text = " ";
+            textBoxEmission.Text = " ";
             //textBoxReception.Text += receivedText + "\n";
 
 
