@@ -47,6 +47,8 @@ namespace RobotInterface
 
         }
 
+
+
         private void TimerAffichage_Tick(object sender, EventArgs e)
         {  
             while(robot.byteListReceived.Count>0)
@@ -109,5 +111,21 @@ namespace RobotInterface
 
             serialPort1.Write(byteList, 0, byteList.Length);
         }
+
+        byte CalculateChecksum(int msgFunction,int msgPayloadLength, byte[] msgPayload)
+        {
+            string sum = msgFunction.ToString("X") + msgPayloadLength.ToString("X") + BitConverter.ToString(msgPayload);
+            byte checksum = (byte)(0xFF - Convert.ToByte(sum, 16));
+            return checksum;
+        }
+
+        void UartEncodeAndSendMessage(int msgFunction,int msgPayloadLength, byte[] msgPayload)
+        {
+            byte checksum = CalculateChecksum(msgFunction,  msgPayloadLength, msgPayload);
+            serialPort1.WriteLine(0xFE + msgFunction.ToString() + msgPayloadLength.ToString() + BitConverter.ToString(msgPayload) + checksum.ToString());
+        }
+
+
+
     }
 }
