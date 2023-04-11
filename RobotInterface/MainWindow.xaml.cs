@@ -53,7 +53,8 @@ namespace RobotInterface
         {  
             while(robot.byteListReceived.Count>0)
             {
-                textBoxReception.Text += robot.byteListReceived.Dequeue().ToString();
+                DecodeMessage(robot.byteListReceived.Dequeue());
+                //textBoxReception.Text += robot.byteListReceived.Dequeue().ToString();
             }
         }
 
@@ -99,32 +100,131 @@ namespace RobotInterface
             if (e.Key == Key.Enter)
             {
                 SendMessage();
+               
             }
         }
 
         private void Test_Click(object sender, RoutedEventArgs e)
         {
-            for (int i = 0; i < byteList.Length; i++)
-            {
-                byteList[i] = (byte)(2 * i);
-            }
 
-            serialPort1.Write(byteList, 0, byteList.Length);
+            byte[] payload = Encoding.ASCII.GetBytes("Bonjour");
+
+            UartEncodeAndSendMessage(0x0080, payload.Length, payload);
+            
+            //textBoxReception.Text = CalculateChecksum(0x0080, payload.Length, payload).ToString("X"); 
+
+
         }
 
         byte CalculateChecksum(int msgFunction,int msgPayloadLength, byte[] msgPayload)
         {
-            string sum = msgFunction.ToString("X") + msgPayloadLength.ToString("X") + BitConverter.ToString(msgPayload);
-            byte checksum = (byte)(0xFF - Convert.ToByte(sum, 16));
+            byte checksum = 0;
+            checksum ^= 0xFE;
+            checksum ^= (byte)(msgFunction >> 8);
+            checksum ^= (byte)(msgFunction >> 0);
+            checksum ^= (byte)(msgPayloadLength >> 8);
+            checksum ^= (byte)(msgPayloadLength >> 0);
+            for(int i=0; i<msgPayloadLength; i++)
+            {
+                checksum ^= msgPayload[i];
+            }
+
+            //textBoxReception.Text = checksum.ToString("X");
             return checksum;
         }
 
+
         void UartEncodeAndSendMessage(int msgFunction,int msgPayloadLength, byte[] msgPayload)
         {
-            byte checksum = CalculateChecksum(msgFunction,  msgPayloadLength, msgPayload);
-            serialPort1.WriteLine(0xFE + msgFunction.ToString() + msgPayloadLength.ToString() + BitConverter.ToString(msgPayload) + checksum.ToString());
+            var message = new byte[msgPayloadLength + 6];
+            int pos = 0;
+            message[pos++] = 0xFE;
+            message[pos++] = (byte)(msgFunction >> 8);
+            message[pos++] = (byte)(msgFunction >> 0);
+            message[pos++] = (byte)(msgPayloadLength >> 8);
+            message[pos++] = (byte)(msgPayloadLength >> 0);
+
+            for (int i = 0; i < msgPayloadLength; i++)
+            {
+                message[pos++] = msgPayload[i];
+            }
+
+            message[pos++] = CalculateChecksum(msgFunction, msgPayloadLength,msgPayload);
+
+            serialPort1.Write(message, 0, message.Length);
         }
 
+        public enum StateReception
+        {
+            Waiting,
+            FunctionMSB,
+            FunctionLSB,
+            PayloadLengthMSB,
+            PayloadLengthLSB,
+            Payload,
+            CheckSum
+        }
+        StateReception rcvState = StateReception.Waiting;
+        int msgDecodedFunction = 0;
+        int msgDecodedPayloadLength = 0;
+        byte[] msgDecodedPayload;
+        int msgDecodedPayloadIndex = 0;
+
+        private void DecodeMessage(byte c)
+        {
+            switch (rcvState)
+            {
+                case StateReception.Waiting:
+                   if(c == 0xFE)
+                    {
+                        rcvState = StateReception.FunctionMSB;
+                    }
+                   break;
+                case StateReception.FunctionMSB:
+                    msgDecodedFunction = c << 8;
+                    rcvState = StateReception.FunctionLSB;
+                    break;
+                case StateReception.FunctionLSB:
+                    msgDecodedFunction += c << 0;
+                    rcvState = StateReception.PayloadLengthMSB;
+                    break;
+                case StateReception.PayloadLengthMSB:
+                    msgDecodedFunction = c << 8;
+                    rcvState = StateReception.PayloadLengthLSB;
+                    break;
+                case StateReception.PayloadLengthLSB:
+                    msgDecodedFunction += c << 0;
+                    
+                    if (msgDecodedPayloadLength > 0)
+                    {
+                        rcvState = StateReception.Payload;
+                    }
+                    else {
+                        rcvState = StateReception.CheckSum;
+                        msgDecodedPayloadIndex = 0;
+                        msgDecodedPayload = new byte[msgDecodedPayloadLength];
+                    }
+                    break;
+                case StateReception.Payload:
+                    msgDecodedPayload[msgDecodedPayloadIndex] = c;
+                    msgDecodedPayloadIndex++;
+                    if(msgDecodedPayloadIndex >= msgDecodedPayloadLength)
+                        rcvState = StateReception.CheckSum;
+                    break;
+                case StateReception.CheckSum:
+                    Byte calculatedChecksum = CalculateChecksum(msgDecodedFunction, msgDecodedPayloadLength, msgDecodedPayload);
+                    Byte receivedChecksum = c;
+                    if (calculatedChecksum == receivedChecksum)
+                      {
+                        //Success, on a un message valide
+                      }
+                    
+                    break;
+                default:
+                    rcvState = StateReception.Waiting;
+                    break;
+            }
+        }
 
 
     }
