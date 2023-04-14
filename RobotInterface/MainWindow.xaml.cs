@@ -108,10 +108,11 @@ namespace RobotInterface
         {
 
             byte[] payload = Encoding.ASCII.GetBytes("Bonjour");
+            int function = 0x0080;
+            UartEncodeAndSendMessage(function, payload.Length, payload);
+            ProcessDecodedMessage(function, payload.Length, payload);
 
-            UartEncodeAndSendMessage(0x0080, payload.Length, payload);
-            
-            //textBoxReception.Text = CalculateChecksum(0x0080, payload.Length, payload).ToString("X"); 
+
 
 
         }
@@ -217,8 +218,9 @@ namespace RobotInterface
                     if (calculatedChecksum == receivedChecksum)
                       {
                         //Success, on a un message valide
+                        UartEncodeAndSendMessage(msgDecodedFunction, msgDecodedPayloadLength, msgDecodedPayload);
                       }
-                    
+                    rcvState = StateReception.Waiting;
                     break;
                 default:
                     rcvState = StateReception.Waiting;
@@ -226,6 +228,33 @@ namespace RobotInterface
             }
         }
 
+
+        void ProcessDecodedMessage(int msgFunction, int msgPayloadLength, byte[] msgPayload)
+        {
+            switch (msgFunction)
+            {
+                case (0x0080):
+                    for (int i = 0; i < msgPayloadLength; i++)
+                    {
+                        textBoxEmission.Text += msgPayload[i].ToString("X");
+                    }
+                    break;
+                case (0x0020):
+                    textBoxEmission.Text += msgPayload[0].ToString("X");
+                    textBoxEmission.Text += msgPayload[1].ToString("X");
+                    break;
+                case (0x0030):
+                    textBoxEmission.Text += msgPayload[0].ToString("X");
+                    textBoxEmission.Text += msgPayload[1].ToString("X");
+                    textBoxEmission.Text += msgPayload[2].ToString("X");
+                    break;
+                case (0x0040):
+                    textBoxEmission.Text += msgPayload[0].ToString("X");
+                    textBoxEmission.Text += msgPayload[1].ToString("X");
+                    break;
+            }
+
+        }
 
     }
 }
