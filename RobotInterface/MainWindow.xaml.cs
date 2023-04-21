@@ -190,20 +190,20 @@ namespace RobotInterface
                     rcvState = StateReception.PayloadLengthMSB;
                     break;
                 case StateReception.PayloadLengthMSB:
-                    msgDecodedFunction = c << 8;
+                    msgDecodedPayloadLength = c << 8;
                     rcvState = StateReception.PayloadLengthLSB;
                     break;
                 case StateReception.PayloadLengthLSB:
-                    msgDecodedFunction += c << 0;
-                    
+                    msgDecodedPayloadLength += c << 0;                    
                     if (msgDecodedPayloadLength > 0)
                     {
                         rcvState = StateReception.Payload;
-                    }
-                    else {
-                        rcvState = StateReception.CheckSum;
                         msgDecodedPayloadIndex = 0;
                         msgDecodedPayload = new byte[msgDecodedPayloadLength];
+                    }
+                    else
+                    {
+                        rcvState = StateReception.CheckSum;
                     }
                     break;
                 case StateReception.Payload:
@@ -218,7 +218,7 @@ namespace RobotInterface
                     if (calculatedChecksum == receivedChecksum)
                       {
                         //Success, on a un message valide
-                        UartEncodeAndSendMessage(msgDecodedFunction, msgDecodedPayloadLength, msgDecodedPayload);
+                        ProcessDecodedMessage(msgDecodedFunction, msgDecodedPayloadLength, msgDecodedPayload);
                       }
                     rcvState = StateReception.Waiting;
                     break;
@@ -228,31 +228,61 @@ namespace RobotInterface
             }
         }
 
+        public enum StateRobot
+        {
+            STATE_ATTENTE = 0,
+            STATE_ATTENTE_EN_COURS = 1,
+            STATE_AVANCE = 2,
+            STATE_AVANCE_EN_COURS = 3,
+            STATE_TOURNE_GAUCHE = 4,
+            STATE_TOURNE_GAUCHE_EN_COURS = 5,
+            STATE_TOURNE_DROITE = 6,
+            STATE_TOURNE_DROITE_EN_COURS = 7,
+            STATE_TOURNE_SUR_PLACE_GAUCHE = 8,
+            STATE_TOURNE_SUR_PLACE_GAUCHE_EN_COURS = 9,
+            STATE_TOURNE_SUR_PLACE_DROITE = 10,
+            STATE_TOURNE_SUR_PLACE_DROITE_EN_COURS = 11,
+            STATE_ARRET = 12,
+            STATE_ARRET_EN_COURS = 13,
+            STATE_RECULE = 14,
+            STATE_RECULE_EN_COURS = 15
+        }
+
 
         void ProcessDecodedMessage(int msgFunction, int msgPayloadLength, byte[] msgPayload)
         {
             switch (msgFunction)
             {
                 case (0x0080):
-                    for (int i = 0; i < msgPayloadLength; i++)
-                    {
-                        textBoxEmission.Text += msgPayload[i].ToString("X");
-                    }
+                    //for (int i = 0; i < msgPayloadLength; i++)
+                    //{
+                    //    textBoxEmission.Text += msgPayload[i].ToString("X");
+                    //}
                     break;
                 case (0x0020):
                     textBoxEmission.Text += msgPayload[0].ToString("X");
                     textBoxEmission.Text += msgPayload[1].ToString("X");
                     break;
                 case (0x0030):
-                    textBoxEmission.Text += msgPayload[0].ToString("X");
-                    textBoxEmission.Text += msgPayload[1].ToString("X");
-                    textBoxEmission.Text += msgPayload[2].ToString("X");
+                    labelIrGauche.Content = msgPayload[0].ToString("X");
+                    //textBoxReception.Text += msgPayload[1].ToString("X");
+                    //textBoxReception.Text += msgPayload[2].ToString("X");
                     break;
                 case (0x0040):
                     textBoxEmission.Text += msgPayload[0].ToString("X");
                     textBoxEmission.Text += msgPayload[1].ToString("X");
                     break;
+                /*case MsgFunction.RobotState:
+                    int instant = (((int)msgPayload[1]) << 24) + (((int)msgPayload[2]) << 16) + (((int)msgPayload[3]) << 8) + ((int)msgPayload[4]);
+                    textBoxReception.Text += "\nRobot␣State␣:␣" +((StateRobot)(msgPayload[0])).ToString() +
+                    "␣-␣" + instant.ToString() + "␣ms";
+                    break;*/
             }
+                
+
+
+
+
 
         }
 

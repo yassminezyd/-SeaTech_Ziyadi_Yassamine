@@ -36,7 +36,7 @@
             </GroupBox>
             <GroupBox Header="Télémètres IR">
                 <StackPanel  Orientation="Vertical">
-                    <Label Content="ir Gauche: 40 cm"></Label>
+                    <Label x:Name="labelIrGauche" Content="ir Gauche: 40 cm"></Label>
                     <Label Content="ir Gauche: 60 cm"></Label>
                     <Label Content="ir Gauche: 65 cm"></Label>
                 </StackPanel>

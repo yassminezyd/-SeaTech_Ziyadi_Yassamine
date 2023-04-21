@@ -11,6 +11,7 @@
 #include "ADC.h"
 #include "main.h"
 #include "UART.h"
+#include "UART_Protocol.h"
 
 
 unsigned char stateRobot;
@@ -101,6 +102,14 @@ int main(void) {
                 LED_BLANCHE = 0;
             }
 
+
+            unsigned char payload[] = {'B', 'o', 'n', 'j', 'o', 'u', 'r'};
+            UartEncodeAndSendMessage(0x0080, sizeof (payload), payload);
+            
+            unsigned char payload2[] =  {(unsigned char)robotState.distanceTelemetreDroit, (unsigned char)robotState.distanceTelemetreCentre, (unsigned char)robotState.distanceTelemetreGauche};
+            UartEncodeAndSendMessage(0x0030, sizeof (payload2), payload2);
+            //__delay32(40000000);
+
         }
 
         OperatingSystemLoop();
@@ -112,13 +121,12 @@ int main(void) {
 
         //        SendMessageDirect((unsigned char*) "Bonjour", 7);
         //        __delay32(40000000);
-        int i;
-        for (i = 0; i < CB_RX1_GetDataSize(); i++) {
-            unsigned char c = CB_RX1_Get();
-            SendMessage(&c, 1);
-        }
-        __delay32(10000);
-
+        //        int i;
+        //        for (i = 0; i < CB_RX1_GetDataSize(); i++) {
+        //            unsigned char c = CB_RX1_Get();
+        //            SendMessage(&c, 1);
+        //        }
+        //__delay32(10000);
 
     } // fin main
 }
