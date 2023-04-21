@@ -37,14 +37,14 @@
             <GroupBox Header="Télémètres IR">
                 <StackPanel  Orientation="Vertical">
                     <Label x:Name="labelIrGauche" Content="ir Gauche: 40 cm"></Label>
-                    <Label Content="ir Gauche: 60 cm"></Label>
-                    <Label Content="ir Gauche: 65 cm"></Label>
+                    <Label x:Name="labelIrCentre" Content="ir Gauche: 60 cm"></Label>
+                    <Label x:Name="labelIrDroit" Content="ir Gauche: 65 cm"></Label>
                 </StackPanel>
             </GroupBox>
             <GroupBox Header="Moteurs">
                 <StackPanel  Orientation="Vertical">
-                    <Label Content="Vitesse Gauche : 55%"></Label>
-                    <Label Content="Vitesse Gauche : 15%"></Label>
+                    <Label x:Name="labelVitesseGauche" Content="Vitesse Gauche : 55%"></Label>
+                    <Label x:Name="labelVitesseDroite" Content="Vitesse Gauche : 15%"></Label>
                 </StackPanel>
             </GroupBox>
         </StackPanel>

@@ -108,6 +108,13 @@ int main(void) {
             
             unsigned char payload2[] =  {(unsigned char)robotState.distanceTelemetreDroit, (unsigned char)robotState.distanceTelemetreCentre, (unsigned char)robotState.distanceTelemetreGauche};
             UartEncodeAndSendMessage(0x0030, sizeof (payload2), payload2);
+            
+            unsigned char payload3[] =  {(signed char)robotState.vitesseDroiteCommandeCourante, (signed char)robotState.vitesseGaucheCommandeCourante};
+            UartEncodeAndSendMessage(0x0040, sizeof (payload3), payload3);
+            
+            
+            unsigned char payload4[] =  {(unsigned char)(LED_ORANGE),(unsigned char)(LED_BLANCHE), (unsigned char)(LED_BLEUE)};
+            UartEncodeAndSendMessage(0x0020, sizeof (payload4), payload4);
             //__delay32(40000000);
 
         }

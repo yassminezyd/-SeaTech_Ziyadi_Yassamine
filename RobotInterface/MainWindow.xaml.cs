@@ -260,17 +260,21 @@ namespace RobotInterface
                     //}
                     break;
                 case (0x0020):
-                    textBoxEmission.Text += msgPayload[0].ToString("X");
-                    textBoxEmission.Text += msgPayload[1].ToString("X");
+                    CheckBoxLed1.IsChecked = (msgPayload[0] == 1);
+                    CheckBoxLed2.IsChecked = (msgPayload[1] == 1);
+                    CheckBoxLed3.IsChecked = (msgPayload[2] == 1);
                     break;
                 case (0x0030):
-                    labelIrGauche.Content = msgPayload[0].ToString("X");
+                    labelIrGauche.Content = msgPayload[0].ToString();
+                    labelIrCentre.Content = msgPayload[1].ToString();
+                    labelIrDroit.Content = msgPayload[2].ToString();
+
                     //textBoxReception.Text += msgPayload[1].ToString("X");
                     //textBoxReception.Text += msgPayload[2].ToString("X");
                     break;
                 case (0x0040):
-                    textBoxEmission.Text += msgPayload[0].ToString("X");
-                    textBoxEmission.Text += msgPayload[1].ToString("X");
+                    labelVitesseGauche.Content = ((sbyte)msgPayload[0]).ToString();
+                    labelVitesseDroite.Content = ((sbyte)msgPayload[1]).ToString();
                     break;
                 /*case MsgFunction.RobotState:
                     int instant = (((int)msgPayload[1]) << 24) + (((int)msgPayload[2]) << 16) + (((int)msgPayload[3]) << 8) + ((int)msgPayload[4]);
