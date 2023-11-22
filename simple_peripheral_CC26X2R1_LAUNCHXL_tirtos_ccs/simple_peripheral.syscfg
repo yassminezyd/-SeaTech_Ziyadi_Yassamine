@@ -30,8 +30,6 @@ const GPIO1       = GPIO.addInstance();
 const GPIO2       = GPIO.addInstance();
 const GPIO3       = GPIO.addInstance();
 const GPIO4       = GPIO.addInstance();
-const GPIO5       = GPIO.addInstance();
-const GPIO6       = GPIO.addInstance();
 const NVS         = scripting.addModule("/ti/drivers/NVS");
 const NVS1        = NVS.addInstance();
 const Power       = scripting.addModule("/ti/drivers/Power");
@@ -125,24 +123,15 @@ GPIO1.pinInstance.$name = "CONFIG_PIN_BTN1";
 GPIO2.$name             = "CONFIG_GPIO_BTN2";
 GPIO2.pinInstance.$name = "CONFIG_PIN_BTN2";
 
+GPIO3.$name             = "SPI_LCD_RS";
 GPIO3.mode              = "Output";
-GPIO3.$name             = "LED_Red";
-GPIO3.$hardware         = system.deviceData.board.components.LED_RED;
-GPIO3.pinInstance.$name = "CONFIG_PIN_0";
+GPIO3.gpioPin.$assign   = "boosterpack.31";
+GPIO3.pinInstance.$name = "CONFIG_PIN_8";
 
+GPIO4.$name             = "SPI_LCD_CS";
 GPIO4.mode              = "Output";
-GPIO4.$name             = "LED_Green";
-GPIO4.$hardware         = system.deviceData.board.components.LED_GREEN;
-GPIO4.pinInstance.$name = "CONFIG_PIN_1";
-
-GPIO5.$name             = "SPI_LCD_RS";
-GPIO5.mode              = "Output";
-GPIO5.gpioPin.$assign   = "boosterpack.31";
-GPIO5.pinInstance.$name = "CONFIG_PIN_8";
-
-GPIO6.$name             = "SPI_LCD_CS";
-GPIO6.mode              = "Output";
-GPIO6.pinInstance.$name = "CONFIG_PIN_9";
+GPIO4.gpioPin.$assign   = "boosterpack.13";
+GPIO4.pinInstance.$name = "CONFIG_PIN_9";
 
 NVS1.$name                    = "CONFIG_NVSINTERNAL";
 NVS1.internalFlash.$name      = "ti_drivers_nvs_NVSCC26XX0";
@@ -172,9 +161,6 @@ ADC2.adc.$suggestSolution                 = "ADC0";
 ADC3.adc.$suggestSolution                 = "ADC0";
 GPIO1.gpioPin.$suggestSolution            = "boosterpack.29";
 GPIO2.gpioPin.$suggestSolution            = "boosterpack.30";
-GPIO3.gpioPin.$suggestSolution            = "boosterpack.39";
-GPIO4.gpioPin.$suggestSolution            = "boosterpack.40";
-GPIO6.gpioPin.$suggestSolution            = "boosterpack.9";
 SPI1.spi.$suggestSolution                 = "SSI0";
 SPI1.spi.dmaRxChannel.$suggestSolution    = "DMA_CH3";
 SPI1.spi.dmaTxChannel.$suggestSolution    = "DMA_CH4";

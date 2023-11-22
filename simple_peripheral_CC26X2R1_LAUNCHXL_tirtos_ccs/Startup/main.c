@@ -75,7 +75,8 @@
 // BLE user defined configuration
 icall_userCfg_t user0Cfg = BLE_USER_CFG;
 #endif // USE_DEFAULT_USER_CFG
-#include "TacheADC/TacheADC.h"
+#include "TacheADC/TachADC.h"
+#include "TacheLCD/TacheLCD.h"
 #include <ti/display/Display.h>
 
 /*******************************************************************************
@@ -154,8 +155,9 @@ int main()
   /* Start task for NPI task */
   NPITask_createTask(ICALL_SERVICE_CLASS_BLE);
 #endif // PTM_MODE
-
+TacheLCD_CreateTask();
   TacheADC_CreateTask();
+
   //SimplePeripheral_createTask();
 
   /* enable interrupts and start SYS/BIOS */

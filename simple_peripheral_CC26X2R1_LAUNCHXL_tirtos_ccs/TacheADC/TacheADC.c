@@ -9,10 +9,12 @@
 #include <ti/sysbios/knl/Queue.h>
 #include <ti/sysbios/knl/Semaphore.h>
 #include <ti/sysbios/BIOS.h>
-#include <TacheADC/TacheADC.h>
+#include <TacheADC/TachADC.h>
 #include "ti_drivers_config.h"
 #include <ti/drivers/GPIO.h>
 #include <ti/drivers/ADC.h>
+#include <TacheLCD/TacheLCD.h>
+#include "Profiles/Accelerometre.h"
 
 
 #define TACHEADC_TASK_PRIORITY 1
@@ -36,9 +38,7 @@ int_fast16_t res;
 
 static Clock_Struct myClock;
 
-extern void TacheADC_init(void);
-
-void Sampling(uint_least8_t Board_ADC_Number);
+float vccx, vccy, vccz;
 
 void myClockSwiFxn(uintptr_t arg0)
 {
@@ -49,18 +49,18 @@ void myClockSwiFxn(uintptr_t arg0)
 
 
 #if 1
-void Turn_on_LEDS(void){
-
-    GPIO_write(LED_Red, 1);
-    GPIO_write(LED_Green, 1);
-
-}
-
-void Turn_off_LED(void){
-
-    GPIO_write(LED_Red, 0);
-    GPIO_write(LED_Green, 0);
-}
+//void Turn_on_LEDS(void){
+//
+//    GPIO_write(LED_Red, 1);
+//    GPIO_write(LED_Green, 1);
+//
+//}
+//
+//void Turn_off_LED(void){
+//
+//    GPIO_write(LED_Red, 0);
+//    GPIO_write(LED_Green, 0);
+//}
 
 #endif
 
@@ -71,15 +71,18 @@ static void TacheADC_taskFxn(UArg a0, UArg a1)
     for (;;)
     {
       //Turn_on_LEDS();
-      Task_sleep(500*(1000/Clock_tickPeriod));//on attends 5 ms
-      Turn_off_LED();
-      Task_sleep(500*(1000/Clock_tickPeriod));
+//      Task_sleep(500*(1000/Clock_tickPeriod));//on attends 5 ms
+//      Turn_off_LED();
+//      Task_sleep(500*(1000/Clock_tickPeriod));
 
       //Le semaphore est poste par le timer myClock
       Semaphore_pend(semTacheADCHandle, BIOS_WAIT_FOREVER);
       Sampling(CONFIG_ADC_0);
       Sampling(CONFIG_ADC_1);
       Sampling(CONFIG_ADC_2);
+      afficherDonnees(vccx, vccy, vccz);
+      SaveDataToSend(vccx, vccy, vccz);
+      Carte_enqueueMsg(PZ_MSG_ACCELEROMETRE, NULL);
     }
 
 }
@@ -115,11 +118,32 @@ void Sampling(uint_least8_t Board_ADC_Number)
         res = ADC_convert(adc, &adcValue1[i]);
         if (res == ADC_STATUS_SUCCESS)
         {
-            adcValue1MicroVolt[i] =
-            ADC_convertRawToMicroVolts(adc, adcValue1[i]);
+            if (Board_ADC_Number == CONFIG_ADC_0)
+            {
+                adcValue1MicroVolt[i] =
+                ADC_convertRawToMicroVolts(adc, adcValue1[i]);
+                vccx = adcValue1MicroVolt[i]/1000000.0;
+            }
+            if (Board_ADC_Number == CONFIG_ADC_1)
+            {
+                adcValue1MicroVolt[i] =
+                ADC_convertRawToMicroVolts(adc, adcValue1[i]);
+                vccy = adcValue1MicroVolt[i]/1000000.0;
+            }
+            if (Board_ADC_Number == CONFIG_ADC_2)
+            {
+                adcValue1MicroVolt[i] =
+                ADC_convertRawToMicroVolts(adc, adcValue1[i]);
+                vccz = adcValue1MicroVolt[i]/1000000.0;
+            }
+
+
         }
     }
     ADC_close(adc);
+
+
+
 }
 
 void TacheADC_CreateTask(void)
