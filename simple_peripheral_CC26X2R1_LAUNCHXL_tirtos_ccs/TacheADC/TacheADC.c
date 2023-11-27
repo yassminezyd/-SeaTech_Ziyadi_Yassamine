@@ -15,6 +15,7 @@
 #include <ti/drivers/ADC.h>
 #include <TacheLCD/TacheLCD.h>
 #include "Profiles/Accelerometre.h"
+#include "Application/simple_peripheral.h"
 
 
 #define TACHEADC_TASK_PRIORITY 1
@@ -38,7 +39,8 @@ int_fast16_t res;
 
 static Clock_Struct myClock;
 
-float vccx, vccy, vccz;
+float vccx, vccy, vccz, joy_ver, joy_hor;
+int counter;
 
 void myClockSwiFxn(uintptr_t arg0)
 {
@@ -70,19 +72,29 @@ static void TacheADC_taskFxn(UArg a0, UArg a1)
 
     for (;;)
     {
-      //Turn_on_LEDS();
+        //Turn_on_LEDS();
 //      Task_sleep(500*(1000/Clock_tickPeriod));//on attends 5 ms
 //      Turn_off_LED();
 //      Task_sleep(500*(1000/Clock_tickPeriod));
 
-      //Le semaphore est poste par le timer myClock
-      Semaphore_pend(semTacheADCHandle, BIOS_WAIT_FOREVER);
-      Sampling(CONFIG_ADC_0);
-      Sampling(CONFIG_ADC_1);
-      Sampling(CONFIG_ADC_2);
-      afficherDonnees(vccx, vccy, vccz);
-      SaveDataToSend(vccx, vccy, vccz);
-      Carte_enqueueMsg(PZ_MSG_ACCELEROMETRE, NULL);
+//Le semaphore est poste par le timer myClock
+        Semaphore_pend(semTacheADCHandle, BIOS_WAIT_FOREVER);
+
+        if(counter>= 5)
+        {
+            Sampling(CONFIG_ADC_0);
+            Sampling(CONFIG_ADC_1);
+            Sampling(CONFIG_ADC_2);
+            counter=0;
+        }
+        counter++;
+
+        Sampling(CONFIG_JOY_vert);
+        Sampling(CONFIG_JOY_horiz);
+
+        SaveDataToSend(vccx, vccy, vccz, joy_ver, joy_hor);
+        Carte_enqueueMsg(PZ_MSG_ACCELEROMETRE);
+        afficherDonnees(vccx, vccy, vccz,joy_ver, joy_hor);
     }
 
 }
@@ -96,7 +108,7 @@ extern void TacheADC_init(void)
     ADC_Params_init(&params);
     Clock_Params clockParams;
     Clock_Params_init(&clockParams);
-    clockParams.period = 100 * (1000 / Clock_tickPeriod), //100ms
+    clockParams.period = 20 * (1000 / Clock_tickPeriod), //20m car freq = 50HZ
     Clock_construct(&myClock, myClockSwiFxn, 0, // Initial delay before first timeout
                     &clockParams);
     Clock_start(Clock_handle(&myClock)); //Timer start
@@ -135,6 +147,18 @@ void Sampling(uint_least8_t Board_ADC_Number)
                 adcValue1MicroVolt[i] =
                 ADC_convertRawToMicroVolts(adc, adcValue1[i]);
                 vccz = adcValue1MicroVolt[i]/1000000.0;
+            }
+            if (Board_ADC_Number == CONFIG_JOY_vert)
+            {
+                adcValue1MicroVolt[i] =
+                ADC_convertRawToMicroVolts(adc, adcValue1[i]);
+                joy_ver = ((adcValue1MicroVolt[i]/1000000.0)/5)*100;
+            }
+            if (Board_ADC_Number == CONFIG_JOY_horiz)
+            {
+                adcValue1MicroVolt[i] =
+                ADC_convertRawToMicroVolts(adc, adcValue1[i]);
+                joy_hor = ((adcValue1MicroVolt[i]/1000000.0)/5)*100;
             }
 
 

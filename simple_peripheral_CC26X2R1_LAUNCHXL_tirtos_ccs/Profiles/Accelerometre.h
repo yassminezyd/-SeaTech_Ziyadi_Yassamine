@@ -93,7 +93,7 @@ typedef struct
  * API FUNCTIONS
  */
 void SendAccelerometerMesure(void);
-void SaveDataToSend(float AxADC, float AyaADC, float AzADC );
+void SaveDataToSend(float AxADC, float AyADC, float AzADC, float JxADC, float JyADC);
 
 /*
  * Accelerometre_AddService- Initializes the Accelerometre service by registering

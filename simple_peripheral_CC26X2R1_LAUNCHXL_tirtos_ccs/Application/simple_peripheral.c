@@ -1,5 +1,6 @@
 /******************************************************************************
-
+ * SendAccelerometreMesure
+case PZ_MSG_ACCELEROMETRE
  @file  simple_peripheral.c
 
  @brief This file contains the Simple Peripheral sample application for use
@@ -90,13 +91,14 @@
 #include "npi_task.h"               // To allow RX event registration
 #include "npi_ble.h"                // To enable transmission of messages to UART
 #include "icall_hci_tl.h"   // To allow ICall HCI Transport Layer
+#include "Profiles/Accelerometre.h"
 #endif // PTM_MODE
 
 
 /*********************************************************************
  * MACROS
  */
-
+//ACCELEROMETRE_SERV_UUID
 /*********************************************************************
  * CONSTANTS
  */
@@ -1009,7 +1011,7 @@ static void SimplePeripheral_processAppMsg(spEvt_t *pMsg)
       break;
 
     case PZ_MSG_ACCELEROMETRE:
-        SendAccelerometreMesure();
+        SendAccelerometerMesure();
         break;
 
     default:
@@ -2635,3 +2637,4 @@ void Carte_enqueueMsg(uint8_t event)
                 syncEvent, (uint8_t *)pMsg);
     }
 }
+//ACCELEROMETRE_SERV_UUID

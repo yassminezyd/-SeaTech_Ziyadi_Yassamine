@@ -73,7 +73,7 @@
 
 
 
-// Accelerometre Service UUID
+// ACCELEROMETRE_SERV_UUID
 CONST uint8_t AccelerometreUUID[ATT_BT_UUID_SIZE] =
 {
   LO_UINT16(ACCELEROMETRE_SERV_UUID), HI_UINT16(ACCELEROMETRE_SERV_UUID)
@@ -88,6 +88,9 @@ CONST uint8_t Accelerometre_AccelerometreMesuresUUID[ATT_UUID_SIZE] =
 uint16 AXF;
 uint16 AYF;
 uint16 AZF;
+
+uint16 JXF;
+uint16 JYF;
 
 /*********************************************************************
  * LOCAL VARIABLES
@@ -369,39 +372,43 @@ static bStatus_t Accelerometre_WriteAttrCB( uint16 connHandle, gattAttribute_t *
 
   return status;
 }
+uint8_t indexArr21 = 0;
 void SendAccelerometerMesure(void){
     uint8_t indexArr = 0;
-    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0xFE;
-    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0x00;
-    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0x70;
-    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0x00;
-    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0x0E;
-    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0x00;
-    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0x00;
+
+
+
     Accelerometre_AccelerometreMesuresVal[indexArr++] = (uint8_t)(AXF >> 8);
     Accelerometre_AccelerometreMesuresVal[indexArr++] = (uint8_t)(AXF);
     Accelerometre_AccelerometreMesuresVal[indexArr++] = (uint8_t)(AYF >> 8);
     Accelerometre_AccelerometreMesuresVal[indexArr++] = (uint8_t)(AYF);
     Accelerometre_AccelerometreMesuresVal[indexArr++] = (uint8_t)(AZF >> 8);
     Accelerometre_AccelerometreMesuresVal[indexArr++] = (uint8_t)(AZF);
+    Accelerometre_AccelerometreMesuresVal[indexArr++] = (uint8_t)(JXF >> 8);
+    Accelerometre_AccelerometreMesuresVal[indexArr++] = (uint8_t)(JXF);
+    Accelerometre_AccelerometreMesuresVal[indexArr++] = (uint8_t)(JYF >> 8);
+    Accelerometre_AccelerometreMesuresVal[indexArr++] = (uint8_t)(JYF);
     Accelerometre_AccelerometreMesuresVal[indexArr++] = 0xFE;
-    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0xFE;
-    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0xFE;
-    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0xFE;
-    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0xFE;
-    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0xFE;
-    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0xFE;
+    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0x00;
+    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0x70;
+    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0x00;
+    Accelerometre_AccelerometreMesuresVal[indexArr++] = 0x0E;
+    Accelerometre_AccelerometreMesuresVal[indexArr++] = indexArr21++;
+
     Accelerometre_SetParameter(ACCELEROMETRE_ACCELEROMETREMESURES,
                                ACCELEROMETRE_ACCELEROMETREMESURES_LEN,
                                Accelerometre_AccelerometreMesuresVal);
 
 }
 
-void SaveDataToSend(float AxADC, float AyADC, float AzADC ){
+void SaveDataToSend(float AxADC, float AyADC, float AzADC, float JxADC, float JyADC){
 
     AXF = (uint16) AxADC;
     AYF = (uint16) AyADC;
     AZF = (uint16) AzADC;
 
-}
+    JXF = (uint16) JxADC;
+    JYF = (uint16) JyADC;
 
+}
+//Carte_enqueueMsg

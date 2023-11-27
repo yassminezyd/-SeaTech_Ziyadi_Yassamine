@@ -73,7 +73,7 @@ extern "C"
 /*********************************************************************
  * FUNCTIONS
  */
-
+void Carte_enqueueMsg(uint8_t event);
 /*
  * Task creation function for the Simple Peripheral.
  */

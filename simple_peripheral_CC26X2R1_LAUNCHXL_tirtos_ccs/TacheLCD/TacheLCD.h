@@ -12,7 +12,7 @@ void floatToString(char *ax, float AX);
 void floatToString1d(char *ax, float AX);
 //void intToString(char *ax, float AX);
 
-void afficherDonnees(float accx, float accy, float accz);
+void afficherDonnees(float vccx, float vccy, float vccz, float joyver, float joyhor);
 void TacheLCD_CreateTask(void);
 
 

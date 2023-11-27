@@ -26,13 +26,15 @@ uint8_t TacheLCDStack[TACHEADC_TASK_STACK_SIZE];
 Semaphore_Struct semTacheLCDStruct;
 Semaphore_Handle semTacheLCDHandle;
 
-float Ax, Ay, Az;
+float Ax, Ay, Az, joyver, joyhor;
 
-void afficherDonnees(float vccx, float vccy, float vccz)
+void afficherDonnees(float vccx, float vccy, float vccz, float joy_ver, float joy_hor)
 {
     Ax = (9.81/0.66)*(vccx-1.65);
     Ay = (9.81/0.66)*(vccy-1.65);
     Az = (9.81/0.66)*(vccz-1.65);
+    joyver = joy_ver-32.5;
+    joyhor = joy_hor-33.6;
     Semaphore_post(semTacheLCDHandle);
 }
 
@@ -83,11 +85,19 @@ static void TacheLCD_taskFxn(UArg a0, UArg a1)
     char DataLCD1[] = "AY:";
     char DataLCD2[] = "AZ:";
 
+    char DataLCD3[] = "JY:";
+    char DataLCD4[] = "JX:";
+
+
     //Fill display with given RGB value
     Fill_LCD(0XFF, 0X00, 0X00);
     OLEDText22(8, 8, DataLCD, SIZE_TWO, 0XFF, 0XFF, 0X00);
     OLEDText22(8, 33, DataLCD1, SIZE_TWO, 0XFF,0XFF, 0X00);
     OLEDText22(8, 58, DataLCD2, SIZE_TWO, 0XFF,0XFF, 0X00);
+
+    OLEDText22(8, 83, DataLCD3, SIZE_TWO, 0XFF,0XFF, 0X00);
+    OLEDText22(8, 108, DataLCD4, SIZE_TWO, 0XFF,0XFF, 0X00);
+
 
 
     for (;;)
@@ -98,15 +108,24 @@ static void TacheLCD_taskFxn(UArg a0, UArg a1)
         char ayDataLCD[10]="";
         char azDataLCD[10]="";
 
+        char joyvDataLCD[10]="";
+        char joyhDataLCD[10]="";
+
         //Afficher les données recues de la tache ADC
 
         floatToString1d(axDataLCD, Ax);
         floatToString1d(ayDataLCD, Ay);
         floatToString1d(azDataLCD, Az);
 
+        floatToString1d(joyvDataLCD, joyver);
+        floatToString1d(joyhDataLCD, joyhor);
+
         OLEDText22(40, 8, axDataLCD, SIZE_TWO, 0XFF, 0XFF, 0X00);
         OLEDText22(40, 33, ayDataLCD, SIZE_TWO, 0XFF, 0XFF, 0X00);
         OLEDText22(40, 58, azDataLCD, SIZE_TWO, 0XFF, 0XFF, 0X00);
+
+        OLEDText22(40, 83, joyvDataLCD, SIZE_TWO, 0XFF, 0XFF, 0X00);
+        OLEDText22(40, 108, joyhDataLCD, SIZE_TWO, 0XFF, 0XFF, 0X00);
 
 
 
