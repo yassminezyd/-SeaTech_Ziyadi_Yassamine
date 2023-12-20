@@ -16,6 +16,9 @@
 #include <ti/sysbios/knl/Semaphore.h>
 #include <ti/sysbios/BIOS.h>
 #include <TacheADC/TacheADC.h>
+#include <TacheLCD/TacheLCD.h>
+#include <Filters/Filter.h>
+#include" TacheFFTClassification/TacheFFTClassification.h"
 
 /* Driver Header files */
 #include <ti/drivers/ADC.h>
@@ -24,6 +27,22 @@
 
 #define TacheADC_TASK_PRIORITY 3
 #define TacheADC_TASK_STACK_SIZE 1024
+float xG, yG, zG;
+
+Order1Filter LPFilterAccelX;
+Order1Filter LPFilterAccelY;
+Order1Filter LPFilterAccelZ;
+
+Order1Filter HPFilterAccelX;
+Order1Filter HPFilterAccelY;
+Order1Filter HPFilterAccelZ;
+
+
+Order1Filter HPFilterAccelNorme;
+float DataFFTX[FFT_WINDOW_SIZE];
+float DataFFTY[FFT_WINDOW_SIZE];
+int indexFFT;
+
 Task_Struct TacheADC;
 uint8_t TacheADCStack[TacheADC_TASK_STACK_SIZE];
 Semaphore_Struct semTacheADCStruct;
@@ -34,6 +53,16 @@ static Clock_Struct myClock;
 void TacheADC_taskFxn(UArg a0, UArg a1)
 {
     ADC_init();
+
+    // Initialisation des filtres
+    InitOrder1LPFilterEuler(&LPFilterAccelX, 1, 100);
+    InitOrder1LPFilterEuler(&LPFilterAccelY, 1, 100);
+    InitOrder1LPFilterEuler(&LPFilterAccelZ, 1, 100);
+
+    // Initialisation des filtres
+    InitOrder1LPFilterEuler(&HPFilterAccelX, 1, 100);
+    InitOrder1LPFilterEuler(&HPFilterAccelY, 1, 100);
+    InitOrder1LPFilterEuler(&HPFilterAccelZ, 1, 100);
 
     // Declaration d’une structure clock_Params
     Clock_Params clockParams;
@@ -52,6 +81,61 @@ void TacheADC_taskFxn(UArg a0, UArg a1)
         uint32_t DatasampledX = Sampling(CONFIG_ADC_0);
         uint32_t DatasampledY = Sampling(CONFIG_ADC_1);
         uint32_t DatasampledZ = Sampling(CONFIG_ADC_2);
+
+
+
+        //Filtre passe-bas sur les 3 axes
+        /*
+        float AccelLPX = ComputeOrder1Filter(&LPFilterAccelX, xG);
+        float AccelLPY = ComputeOrder1Filter(&LPFilterAccelY, yG);
+        float AccelLPZ = ComputeOrder1Filter(&LPFilterAccelZ, zG);
+        */
+        xG = uVToG_float(DatasampledX);
+        yG = uVToG_float(DatasampledY);
+        zG = uVToG_float(DatasampledZ);
+
+        float AccelHPX = ComputeOrder1Filter(&HPFilterAccelX, xG);
+        float AccelHPY = ComputeOrder1Filter(&HPFilterAccelY, yG);
+        float AccelHPZ = ComputeOrder1Filter(&HPFilterAccelZ, zG);
+
+        //afficherDonnees(xG, yG, zG);
+
+        /*
+        float features[6];
+        features[0]= AccelLPX;
+        features[1]= 0;
+        features[2]= AccelLPY;
+        features[3]= 0;
+        features[4]= AccelLPZ;
+        features[5]= 0;
+        */
+
+        float features[6];
+        features[0] = AccelHPX;
+        features[1] = 0;
+        features[2] = AccelHPY;
+        features[3] = 0;
+        features[4] = AccelHPZ;
+        features[5] = 0;
+        LCD_PrintState(0, 0, 0, 0, features, 6);
+
+        float normeAccel = sqrtf(
+                AccelHPX * AccelHPX + AccelHPY * AccelHPY
+                        + AccelHPZ * AccelHPZ);
+        float normeAccelHP = ComputeOrder1Filter(&HPFilterAccelNorme,
+                                                 normeAccel);
+        DataFFTX[indexFFT] = indexFFT;
+        DataFFTY[indexFFT] = normeAccelHP;
+        indexFFT++;
+        if (indexFFT >= FFT_WINDOW_SIZE)
+        {
+            //On lance la tache de calcul de la FFT et classification
+            FFTClassificationTrigger(DataFFTX, DataFFTY);
+            //Le resultat est recupere dans DataYFFT
+            indexFFT = 0;
+        }
+
+
     }
 }
 
@@ -80,6 +164,7 @@ void TacheADC_CreateTask(void)
     semTacheADCHandle = Semaphore_handle(&semTacheADCStruct);
 }
 
+
 uint32_t Sampling(uint_least8_t Board_ADC_Number)
 {
     ADC_Handle adc;
@@ -95,6 +180,5 @@ uint32_t Sampling(uint_least8_t Board_ADC_Number)
 
     return adcValue1MicroVolt;
 }
-
 
 
